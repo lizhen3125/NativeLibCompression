@@ -554,9 +554,10 @@ public class ComPressApk {
 		}
 		
 		//LZMA compress
-		if(!OsCommand.getInstance().CompressWithLzma(rawso.getAbsolutePath()+cmdfolder))
-			return;
-
+		if (cmdfolder != null && cmdfolder.trim().length() > 0) {
+			if(!OsCommand.getInstance().CompressWithLzma(rawso.getAbsolutePath()+cmdfolder))
+				return;
+		}
 		//after compress, restore the tmp
 		if(x86Link!=null && x86tmp!=null)
 		{
