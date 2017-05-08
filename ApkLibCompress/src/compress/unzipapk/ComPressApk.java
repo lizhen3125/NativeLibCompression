@@ -669,7 +669,7 @@ public class ComPressApk {
 			
 			while((sline=reader.readLine())!=null)
 			{
-				if(sline.startsWith("#FILENAME:") && sline.indexOf(fname)>0)
+				if(sline.startsWith("#BEGIN"))
 				{
 					liststring = new ArrayList<String>();
 					bgotn = true;
