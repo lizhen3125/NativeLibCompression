@@ -18,6 +18,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 public class UtilsFunc {
@@ -60,8 +61,7 @@ public class UtilsFunc {
         return true;
 	}
 	
-	public void HackLibPath(String pname)
-	{
+	public String HackLibPath(String pname) {
 		/*
 		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
         	HackSystemICS(pname);	
@@ -74,16 +74,23 @@ public class UtilsFunc {
         	}
         } 		
 		*/ //--leyou find sansumg s4 will use HackSystemLow1?
-		HackSystemICS(pname);	
-		HackSystemLow1(pname);
-		HackSystemLow2(pname);
-		HackSystemLow3(pname);
+		String hackResult = HackSystemICS(pname);
+		if (!TextUtils.isEmpty(hackResult)) {//ics hack failed
+			hackResult = HackSystemLow1(pname);
+			if (!TextUtils.isEmpty(hackResult)) {// low1 hack failed
+				hackResult = HackSystemLow2(pname);
+				if (!TextUtils.isEmpty(hackResult)) {//low2 hack failed
+					hackResult = HackSystemLow3(pname);
+				}
+			}
+		}
+		return hackResult;
 	}
 	
 	@SuppressLint("NewApi")
-	private void HackSystemICS(String pname)
-	{
-		try{
+	private String HackSystemICS(String pname) {
+		String result = null;
+		try {
 			Field fieldSysPath = BaseDexClassLoader.class.getDeclaredField("pathList");  
 	        fieldSysPath.setAccessible(true);
 	        Object paths = (Object)fieldSysPath.get(this.getClass().getClassLoader());  
@@ -97,20 +104,21 @@ public class UtilsFunc {
 	        tmp[0] = new File(pname);    
 	        Libpaths.set(paths, tmp);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
+			result = "SystemICS: " + e.getMessage();
 			e.printStackTrace();
-		}catch (java.lang.Error e)//NoClassDefFoundError
-		{
+		} catch (java.lang.Error e) {//NoClassDefFoundError
+			result = "SystemICS: " + e.getMessage();
 			e.printStackTrace();
 		}
+		return result;
 	}
 	
-	private boolean HackSystemLow3(String pname) //even older
-	{
-		boolean bret = true;
+	private String HackSystemLow3(String pname) {//even older
 		Field fieldSysPath;
+		String result = null;
 		
-		try{
+		try {
 			fieldSysPath = DexClassLoader.class.getDeclaredField("mLibPaths");  
 	        fieldSysPath.setAccessible(true);
 	        
@@ -120,20 +128,19 @@ public class UtilsFunc {
 	        tmp[paths.length] = pname;
 	        fieldSysPath.set(this.getClass().getClassLoader(), tmp);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
+			result = "SystemLow3: " + e.getMessage() ;
 			e.printStackTrace();
-			bret = false;
-		}catch (java.lang.Error e)//NoClassDefFoundError
-		{
+		} catch (java.lang.Error e) {//NoClassDefFoundError
+			result = "SystemLow3: " + e.getMessage() ;
 			e.printStackTrace();
 		}
-		return bret;
+		return result;
 	}	
 	
-	private boolean HackSystemLow2(String pname)  //for 2.2
-	{
-		boolean bret = true;
-		try{
+	private String HackSystemLow2(String pname) { //for 2.2
+		String result = null;
+		try {
 			Field fieldSysPath = PathClassLoader.class.getDeclaredField("mLibPaths");  
 	        fieldSysPath.setAccessible(true);
 	        
@@ -143,19 +150,18 @@ public class UtilsFunc {
 	        tmp[paths.length] = pname;
 	        fieldSysPath.set(this.getClass().getClassLoader(), tmp);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
+			result = "SystemLow2: " + e.getMessage();
 			e.printStackTrace();
-			bret = false;
-		}catch (java.lang.Error e)//NoClassDefFoundError
-		{
+		} catch (java.lang.Error e) {//NoClassDefFoundError
+			result ="SystemLow2: " +  e.getMessage();
 			e.printStackTrace();
 		}
-		return bret;
+		return result;
 	}	
 	
-	private boolean HackSystemLow1(String pname)  //for 2.3
-	{
-		boolean bret = true;
+	private String HackSystemLow1(String pname)  {//for 2.3
+		String result = null;
 		try{
 			Field fieldSysPath = PathClassLoader.class.getDeclaredField("libraryPathElements");  
 	        fieldSysPath.setAccessible(true);
@@ -164,14 +170,14 @@ public class UtilsFunc {
 	        paths.add(pname);
 	        //fieldSysPath.set(paths, paths);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
+			result = "SystemLow1: " + e.getMessage();
 			e.printStackTrace();
-			bret = false;
-		}catch (java.lang.Error e) //NoClassDefFoundError
-		{
+		} catch (java.lang.Error e)  {//NoClassDefFoundError
+			result = "SystemLow1: " + e.getMessage();
 			e.printStackTrace();
 		}
-		return bret;
+		return result;
 	}	
 
 	public int getIdByName(Context context, String className, String name) {

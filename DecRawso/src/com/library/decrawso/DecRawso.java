@@ -534,12 +534,10 @@ public class DecRawso {
 	class Dec7zLibThread implements Runnable	
 	{
 		private boolean bCloudDownload;
-		public Dec7zLibThread(boolean CloudDownload)
-		{
+		public Dec7zLibThread(boolean CloudDownload) {
 			bCloudDownload = CloudDownload;
 		}
-		private int readRawso(String outname)
-		{
+		private int readRawso(String outname) {
 			AssetManager am = mAppContext.getAssets();
 			try {
 				BufferedInputStream bin = new BufferedInputStream(am.open("rawso"));
@@ -571,17 +569,16 @@ public class DecRawso {
 		public void run() {   
 			int res;
 
-			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
-			{
+			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) { //decode on android2.2
 				res = readRawso(sAppFilePath+"/DecRawsoLib/rawso22");
 				if(res==0)
 					res = Decode(null,sAppFilePath+"/DecRawsoLib/rawso22",sPathName,abi);
-			}
-			else
+			} else {
 				res = Decode(mAppContext.getAssets(),null,sPathName,abi);
+			}
+
 			
-        	if(0==res)
-        	{
+        	if (0==res){
         		File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
         		try {
 					filex.createNewFile();
@@ -592,8 +589,7 @@ public class DecRawso {
 				}
         	}
 			
-			if(IsArmMode())
-			{
+			if(IsArmMode()) {
 				File file_armmode = new File(sAppFilePath+"/DecRawsoLib/armmode");
 				try {
 					file_armmode.createNewFile();
@@ -604,16 +600,14 @@ public class DecRawso {
 			}
 			
     		File filecloud = new File(sAppFilePath+"/DecRawsoLib/cloud.txt");
-    		if(filecloud.exists())  //need download
-    		{
+    		if (filecloud.exists()) {  //need download
     			if(bCloudDownload)
     				mCloudDlr.RegisterCloudDownloader(mAppContext, sAppFilePath);
     			else 
     				filecloud.delete();
     		}
     		
-    		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
-    		{
+    		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) {//decode on android2.2
     			File fileraw22 = new File(sAppFilePath+"/DecRawsoLib/rawso22");
     			if(fileraw22.exists())
     				fileraw22.delete();
@@ -622,14 +616,10 @@ public class DecRawso {
     		
     		mUtils.HackLibPath(sPathName); //only decoding finish then add library path, to avoid load a decoding file 
     		
-        	if(mHdl!=null && res==0)
-        	{
+        	if(mHdl!=null && res==0) {
         		SendDecEndMsg(res);
-        	}
-        	else
-        	{
-        		if(res!=0)
-        		{
+        	} else {
+        		if(res!=0) {
         			mUtils.showToastInThread(geterror(res),mAppContext);
         			System.exit(0);
         		}
@@ -637,8 +627,7 @@ public class DecRawso {
 		}
 	}
 	
-	private void Dec7zLib(boolean showProgress,boolean bCloudDownload,Context cont)
-	{
+	private void Dec7zLib(boolean showProgress,boolean bCloudDownload,Context cont) {
 		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD)
 			System.loadLibrary("DecRawso22");
 		else
@@ -858,10 +847,8 @@ public class DecRawso {
 	 * you must call it on the first , use Handler the get the decoding msg
 	 * if you do not receive the decoding end msg. please make sure call waitdecoding or use system.load
 	 */
-	public static boolean NewInstance(Context cont,Handler hdl,boolean showProgress)
-	{
-		if(DecRawsoSingleton==null )
-		{
+	public static boolean NewInstance(Context cont,Handler hdl,boolean showProgress) {
+		if (DecRawsoSingleton==null ) {
 			DecRawsoSingleton = new DecRawso(cont,hdl,showProgress);
 			return true;
 		}
@@ -892,9 +879,9 @@ public class DecRawso {
 	/*
 	 * use it the get the singleton
 	 */
-	public static DecRawso GetInstance()
-	{
+	public static DecRawso GetInstance() {
 		//must call NewInstance firstly
 		return DecRawsoSingleton;
-	}			
+	}		
+	
 }
