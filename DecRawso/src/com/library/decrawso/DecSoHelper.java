@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import android.annotation.TargetApi;
 import android.app.ProgressDialog;
@@ -19,10 +20,15 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 
+/**
+ * yangjing
+ * 按照需求，抽象抽来的新的API 接口调用方式
+ */
+
 public class DecSoHelper {
-	private native int DecodeNew(AssetManager  asset,String inpath, String outpath,String abi); //will unzip (*.7z) in the same folder with full path
-	private native boolean IsArmModeNew(); //get unzip arm or x86 folder
-	private native void SetFilterNew(String filter,String fix);
+//	private native int DecodeNew(AssetManager  asset,String inpath, String outpath,String abi); //will unzip (*.7z) in the same folder with full path
+//	private native boolean IsArmModeNew(); //get unzip arm or x86 folder
+//	private native void SetFilterNew(String filter,String fix);
 	
 	private static DecSoHelper DecSoHelperSingleton = null;
 	
@@ -66,6 +72,7 @@ public class DecSoHelper {
 	public final static int  SZ_FILE_NOT_OPENED = 20;
 	public final static int  SZ_FLAG_OK_END_ERROR = 21;//写解压成功标志文件出错
 	public final static int  SZ_FLAG_ARM_END_ERROR = 22;//写arm文件标志出错
+	public final static int SZ_UNSATISFIED_LINK_ERROR = 23;//UnsatisfiedLinkError
 
 	
 	private DecSoHelper(Context context, Handler hdl) {
@@ -131,13 +138,10 @@ public class DecSoHelper {
         		}
         		
 	    		sPathName  = sAppFilePath+"/DecRawsoLib/";
-    		}  else {//done文件已经存在，表示已经解压缩成功
-    			sendDecEndMsg(SZ_OK);
     		}
 		} else {//被解压缩的文件，打开失败
 			sendDecEndMsg(SZ_FILE_NOT_OPENED);
 		}
-		                		
 	}
 	public static DecSoHelper getInstance(Context ctx, Handler handler) {
 		if (DecSoHelperSingleton ==null ) {
@@ -188,6 +192,11 @@ public class DecSoHelper {
 
 	//进行解压缩操作
 	public void doDec7zLib() {
+		File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
+		if (filex.exists()) {//done文件已经存在，表示已经解压缩成功
+			sendDecEndMsg(SZ_OK);
+		}
+		
 		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD)
 			System.loadLibrary("DecRawso22");
 		else
@@ -232,9 +241,9 @@ public class DecSoHelper {
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) { //decode on android2.2
 				res = readRawso(sAppFilePath+"/DecRawsoLib/rawso22");
 				if (res==SZ_OK)
-					res = DecodeNew(null,sAppFilePath+"/DecRawsoLib/rawso22",sPathName,abi);
+					res = new Utils().decode(null,sAppFilePath+"/DecRawsoLib/rawso22",sPathName,abi);
 			} else {
-				res = DecodeNew(mAppContext.getAssets(),null,sPathName,abi);
+				res = new Utils().decode(mAppContext.getAssets(),null,sPathName,abi);
 			}
 			
         	if (SZ_OK == res) {
@@ -249,7 +258,7 @@ public class DecSoHelper {
 				}
         	}
 			
-			if (IsArmModeNew()) {
+			if (new Utils().isArmMode()) {
 				File file_armmode = new File(sAppFilePath+"/DecRawsoLib/armmode");
 				try {
 					file_armmode.createNewFile();
@@ -288,6 +297,10 @@ public class DecSoHelper {
 		Message msg = mHdl.obtainMessage(HDL_MSG_HACK_END);
 		msg.obj = hackResult;
 		mHdl.sendMessage(msg);
+	}
+	
+	public String getJNIString() {
+		return stringFromJNI();
 	}
 }
 	

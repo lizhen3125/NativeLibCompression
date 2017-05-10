@@ -62,9 +62,9 @@ import android.os.Handler;
 
 
 public class DecRawso {
-	private native int Decode(AssetManager  asset,String inpath, String outpath,String abi); //will unzip (*.7z) in the same folder with full path
+/*	private native int Decode(AssetManager  asset,String inpath, String outpath,String abi); //will unzip (*.7z) in the same folder with full path
 	private native boolean IsArmMode(); //get unzip arm or x86 folder
-	private native void SetFilter(String filter,String fix);
+	private native void SetFilter(String filter,String fix);*/
 	//private native int GetCpufamily();
 	
 	//make sure outpath end with / : for ex, "/sdcard/test7z/"    "/sdcard/test7z" will make error
@@ -469,7 +469,7 @@ public class DecRawso {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			res = Decode(null,sAppFilePath+"/DecRawsoLib/cloudrawso",sAppFilePath+"/DecRawsoLibCld/",abi);
+			res = new Utils().decode(null,sAppFilePath+"/DecRawsoLib/cloudrawso",sAppFilePath+"/DecRawsoLibCld/",abi);
 			new File(sAppFilePath+"/DecRawsoLib/cloudrawso").delete(); //after dec, del cloudrawso even it fails.
 			if(0==res)
 			{
@@ -482,7 +482,7 @@ public class DecRawso {
 					e.printStackTrace();
 				}
 
-				if(IsArmMode())
+				if(new Utils().isArmMode())
 				{
 					File file_armmode = new File(sAppFilePath+"/DecRawsoLibCld/armmode");
 					try {
@@ -526,7 +526,7 @@ public class DecRawso {
 	void Dec7zCloudLib()
 	{
 		if(sFilter!=null)
-			SetFilter(sFilter,sFix);
+			new Utils().setFilter(sFilter,sFix);
 
 		new Thread(new Dec7zCloudLibThread()).start();
 	}	
@@ -572,9 +572,9 @@ public class DecRawso {
 			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) { //decode on android2.2
 				res = readRawso(sAppFilePath+"/DecRawsoLib/rawso22");
 				if(res==0)
-					res = Decode(null,sAppFilePath+"/DecRawsoLib/rawso22",sPathName,abi);
+					res = new Utils().decode(null,sAppFilePath+"/DecRawsoLib/rawso22",sPathName,abi);
 			} else {
-				res = Decode(mAppContext.getAssets(),null,sPathName,abi);
+				res = new Utils().decode(mAppContext.getAssets(),null,sPathName,abi);
 			}
 
 			
@@ -589,7 +589,7 @@ public class DecRawso {
 				}
         	}
 			
-			if(IsArmMode()) {
+			if(new Utils().isArmMode()) {
 				File file_armmode = new File(sAppFilePath+"/DecRawsoLib/armmode");
 				try {
 					file_armmode.createNewFile();
@@ -634,7 +634,7 @@ public class DecRawso {
 			System.loadLibrary("DecRawso");		
 		
 		if(sFilter!=null)
-			SetFilter(sFilter,sFix);
+			new Utils().setFilter(sFilter,sFix);
 
 		if(showProgress)
 		{
@@ -883,5 +883,6 @@ public class DecRawso {
 		//must call NewInstance firstly
 		return DecRawsoSingleton;
 	}		
+	
 	
 }

@@ -684,7 +684,7 @@ JNIEXPORT jint JNICALL Java_com_library_decrawso_DecRawso_GetCpufamily(JNIEnv * 
 }
 #endif
 
-JNIEXPORT void JNICALL Java_com_library_decrawso_DecRawso_SetFilter
+JNIEXPORT void JNICALL Java_com_library_decrawso_Utils_SetFilter
 (JNIEnv * env, jclass thiz,jstring jfilter,jstring jfix)
 {
 	const jchar *sfilter=NULL,*sfix=NULL,*sbackup=NULL;
@@ -716,12 +716,12 @@ JNIEXPORT void JNICALL Java_com_library_decrawso_DecRawso_SetFilter
 	}
 }
 
-JNIEXPORT jboolean JNICALL Java_com_library_decrawso_DecRawso_IsArmMode(JNIEnv * env, jclass thiz)
+JNIEXPORT jboolean JNICALL Java_com_library_decrawso_Utils_IsArmMode(JNIEnv * env, jclass thiz)
 {
 	return mWorkMode;
 }
 
-JNIEXPORT int JNICALL Java_com_library_decrawso_DecRawso_Decode
+JNIEXPORT int JNICALL Java_com_library_decrawso_Utils_Decode
 (JNIEnv * env, jclass thiz,jobject assetManager,jstring jinpath,jstring joutpath,jstring jabi)
 {
   CFileInStream archiveStream;
@@ -1066,3 +1066,5 @@ CHECK_AGAIN:
   else
 	  return 1;
 }
+
+
