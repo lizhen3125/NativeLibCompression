@@ -98,7 +98,14 @@ public class UtilsFunc {
 	        Field Libpaths = c.getDeclaredField("nativeLibraryDirectories");
 	        Libpaths.setAccessible(true);
 	        
-	        File[] nativepaths = (File[])Libpaths.get(paths);        
+	        File[] nativepaths = (File[])Libpaths.get(paths);
+	        //if exists, no add
+	        for(File path : nativepaths) {
+	        	if (path.getPath().equals(new File(pname).getPath())) {
+	        		return result;
+	        	}
+	        }
+	        
 	        File[] tmp = new File[nativepaths.length+1];     
 	        System.arraycopy(nativepaths,0,tmp,1,nativepaths.length);     
 	        tmp[0] = new File(pname);    
@@ -123,6 +130,14 @@ public class UtilsFunc {
 	        fieldSysPath.setAccessible(true);
 	        
 	        String[] paths = (String[])fieldSysPath.get(this.getClass().getClassLoader());  
+	        
+	        //if exists, no add
+	        for(String path : paths) {
+	        	if (path.equals(pname)) {
+	        		return result;
+	        	}
+	        }
+	        
 	        String[] tmp= new String[paths.length+1];
 	        System.arraycopy(paths,0,tmp,0,paths.length);     
 	        tmp[paths.length] = pname;
@@ -145,6 +160,13 @@ public class UtilsFunc {
 	        fieldSysPath.setAccessible(true);
 	        
 	        String[] paths = (String[])fieldSysPath.get(this.getClass().getClassLoader());  
+	        //if exists, no add
+	        for(String path : paths) {
+	        	if (path.equals(pname)) {
+	        		return result;
+	        	}
+	        }
+	        
 	        String[] tmp= new String[paths.length+1];
 	        System.arraycopy(paths,0,tmp,0,paths.length);     
 	        tmp[paths.length] = pname;
@@ -167,6 +189,10 @@ public class UtilsFunc {
 	        fieldSysPath.setAccessible(true);
 	        
 	        List<String> paths = (List<String>)fieldSysPath.get(this.getClass().getClassLoader());  
+	        //if exists, no add
+	        if (paths.contains(pname)) {
+	        	return result;
+	        }
 	        paths.add(pname);
 	        //fieldSysPath.set(paths, paths);
 

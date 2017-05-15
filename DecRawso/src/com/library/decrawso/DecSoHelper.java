@@ -84,7 +84,7 @@ public class DecSoHelper {
 		mAppContext = context.getApplicationContext();
 
 		sAppFilePath = context.getFilesDir().getAbsolutePath();
-		sPathName  = sAppFilePath+"/../lib/";
+		sPathName  = sAppFilePath+"/DecRawsoLib/";
 		AssetFileDescriptor fd=null;
  
 		abi = android.os.Build.CPU_ABI;
@@ -136,8 +136,6 @@ public class DecSoHelper {
 	    				tmpfile.delete();  //_FORCEARM_.tmp will be deleted
 	    			}
         		}
-        		
-	    		sPathName  = sAppFilePath+"/DecRawsoLib/";
     		}
 		} else {//被解压缩的文件，打开失败
 			sendDecEndMsg(SZ_FILE_NOT_OPENED);
@@ -195,6 +193,7 @@ public class DecSoHelper {
 		File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
 		if (filex.exists()) {//done文件已经存在，表示已经解压缩成功
 			sendDecEndMsg(SZ_OK);
+			return;
 		}
 		
 		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD)
@@ -299,8 +298,5 @@ public class DecSoHelper {
 		mHdl.sendMessage(msg);
 	}
 	
-	public String getJNIString() {
-		return stringFromJNI();
-	}
 }
 	
