@@ -73,6 +73,7 @@ public class DecSoHelper {
 	public final static int  SZ_FLAG_OK_END_ERROR = 21;//写解压成功标志文件出错
 	public final static int  SZ_FLAG_ARM_END_ERROR = 22;//写arm文件标志出错
 	public final static int SZ_UNSATISFIED_LINK_ERROR = 23;//UnsatisfiedLinkError
+	public final static int SZ_WAITTING = 24;//正在解压缩
 
 	
 	private DecSoHelper(Context context, Handler hdl) {
@@ -201,8 +202,12 @@ public class DecSoHelper {
 		else
 			System.loadLibrary("DecRawso");		
 
-		mDec7zLibThread = new Thread(new Dec7zLibThread());
-		mDec7zLibThread.start();
+		if (mDec7zLibThread != null && mDec7zLibThread.isAlive()) {
+			sendDecEndMsg(SZ_WAITTING);	            	
+		} else {
+			mDec7zLibThread = new Thread(new Dec7zLibThread());
+			mDec7zLibThread.start();
+		}
 	}
 	
 	//进行解压缩的runnable
@@ -286,6 +291,7 @@ public class DecSoHelper {
 	//解压结束之后，发送的消息
 	//res为0时表示成功，其他为非成功
 	private void sendDecEndMsg( int arg1) {
+		mDec7zLibThread = null;
 		if (mHdl!=null)
         	mHdl.sendMessage(mHdl.obtainMessage(HDL_MSGDECEND, arg1, 0));	
 	}

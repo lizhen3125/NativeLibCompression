@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 import dalvik.system.BaseDexClassLoader;
@@ -74,18 +77,74 @@ public class UtilsFunc {
         	}
         } 		
 		*/ //--leyou find sansumg s4 will use HackSystemLow1?
-		String hackResult = HackSystemICS(pname);
-		if (!TextUtils.isEmpty(hackResult)) {//ics hack failed
-			hackResult = HackSystemLow1(pname);
-			if (!TextUtils.isEmpty(hackResult)) {// low1 hack failed
-				hackResult = HackSystemLow2(pname);
-				if (!TextUtils.isEmpty(hackResult)) {//low2 hack failed
-					hackResult = HackSystemLow3(pname);
+		StringBuilder sb = new StringBuilder();
+		String hackResult = Hack6AndNewest(pname);
+		if (!TextUtils.isEmpty(hackResult)) {// 6.0 and newest hack failed
+			sb.append(hackResult).append("; ");
+			hackResult = HackSystemICS(pname);
+			if (!TextUtils.isEmpty(hackResult)) {//ics hack failed
+				sb.append(hackResult).append("; ");
+				hackResult = HackSystemLow1(pname);
+				if (!TextUtils.isEmpty(hackResult)) {// low1 hack failed
+					sb.append(hackResult).append("; ");
+					hackResult = HackSystemLow2(pname);
+					if (!TextUtils.isEmpty(hackResult)) {//low2 hack failed
+						sb.append(hackResult);
+						hackResult = HackSystemLow3(pname);
+					}
 				}
 			}
 		}
-		return hackResult;
+		
+		if (TextUtils.isEmpty(hackResult)) {//如果成功了，返回Null
+			return hackResult;
+		} else {//如果失败了，返回所有部分的错误信息
+			return sb.toString();
+		}	
 	}
+	
+	private String Hack6AndNewest(String pname) {
+		String result = null;
+        try {
+            Field fieldSysPath = BaseDexClassLoader.class.getDeclaredField("pathList");
+            fieldSysPath.setAccessible(true);
+            Object paths = (Object)fieldSysPath.get(this.getClass().getClassLoader());
+            Class c = paths.getClass();
+            Field Libpaths = c.getDeclaredField("nativeLibraryPathElements");
+            Libpaths.setAccessible(true);
+
+            Class elementcls = Class.forName(c.getName() + "$Element");
+            Constructor<?>[] constructors = elementcls.getDeclaredConstructors();
+            constructors[0].setAccessible(true);
+            Object obj  = constructors[0].newInstance(new File(pname), true, null, null);
+
+			Object[] original = (Object[]) Libpaths.get(paths);
+			//if exists, no add
+			for (int i = 0; i < original.length; i++) {
+				Field f = elementcls.getDeclaredField("dir");
+				f.setAccessible(true);
+				if (((File) f.get(original[i])).getPath().equals(
+						new File(pname).getPath())) {
+					return result;
+				}
+			}
+
+			Object tmp = Array.newInstance(((Object[]) Libpaths.get(paths)).getClass().getComponentType(), original.length + 1);
+			System.arraycopy(original, 0, tmp, 0, original.length);
+			Array.set(tmp, original.length, obj);
+			Libpaths.set(paths, tmp);       
+
+        } catch (Exception e ) {
+        	result = "System6AndNewest: " + e.getMessage() ;
+            e.printStackTrace();
+        } catch (java.lang.Error e) {//NoClassDefFoundError
+			result = "System6AndNewest: " + e.getMessage() ;
+			e.printStackTrace();
+		}
+        return result;
+	}
+	
+	
 	
 	@SuppressLint("NewApi")
 	private String HackSystemICS(String pname) {
@@ -97,20 +156,31 @@ public class UtilsFunc {
 	        Class c = paths.getClass();
 	        Field Libpaths = c.getDeclaredField("nativeLibraryDirectories");
 	        Libpaths.setAccessible(true);
-	        
-	        File[] nativepaths = (File[])Libpaths.get(paths);
-	        //if exists, no add
-	        for(File path : nativepaths) {
-	        	if (path.getPath().equals(new File(pname).getPath())) {
-	        		return result;
+
+	        if (Libpaths.getGenericType().toString().equals("java.util.List<java.io.File>")) {
+	        	List<File> pathList = (ArrayList)Libpaths.get(paths);
+	        	//if exists, no add
+	        	for (File file : pathList) {
+	        		if (file.getPath().equals(new File(pname).getPath())) {
+	        			return result;
+	        		}
 	        	}
+	        	pathList.add(new File(pname));
+	        } else {
+		        File[] nativepaths = (File[])Libpaths.get(paths);
+		        //if exists, no add
+		        for(File path : nativepaths) {
+		        	if (path.getPath().equals(new File(pname).getPath())) {
+		        		return result;
+		        	}
+		        }
+		        
+		        File[] tmp = new File[nativepaths.length+1];     
+		        System.arraycopy(nativepaths,0,tmp,1,nativepaths.length);     
+		        tmp[0] = new File(pname);    
+		        Libpaths.set(paths, tmp);
 	        }
 	        
-	        File[] tmp = new File[nativepaths.length+1];     
-	        System.arraycopy(nativepaths,0,tmp,1,nativepaths.length);     
-	        tmp[0] = new File(pname);    
-	        Libpaths.set(paths, tmp);
-
 		} catch (Exception e) {
 			result = "SystemICS: " + e.getMessage();
 			e.printStackTrace();
