@@ -291,7 +291,9 @@ public class DecSoHelper {
 	//解压结束之后，发送的消息
 	//res为0时表示成功，其他为非成功
 	private void sendDecEndMsg( int arg1) {
-		mDec7zLibThread = null;
+		if (arg1 != SZ_WAITTING) {//如果不是等待消息，那么就是终结状态，需要将mDec7zLibThread置空
+			mDec7zLibThread = null;
+		}
 		if (mHdl!=null)
         	mHdl.sendMessage(mHdl.obtainMessage(HDL_MSGDECEND, arg1, 0));	
 	}
