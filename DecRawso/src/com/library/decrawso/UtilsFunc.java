@@ -78,19 +78,23 @@ public class UtilsFunc {
         } 		
 		*/ //--leyou find sansumg s4 will use HackSystemLow1?
 		StringBuilder sb = new StringBuilder();
-		String hackResult = Hack6AndNewest(pname);
-		if (!TextUtils.isEmpty(hackResult)) {// 6.0 and newest hack failed
+		String hackResult = Hack8AndNewest(pname);
+		if (!TextUtils.isEmpty(hackResult)) {//8.0 and newest hack failed
 			sb.append(hackResult).append("; ");
-			hackResult = HackSystemICS(pname);
-			if (!TextUtils.isEmpty(hackResult)) {//ics hack failed
+			hackResult = Hack6AndNewest(pname);
+			if (!TextUtils.isEmpty(hackResult)) {// 6.0 and newest hack failed
 				sb.append(hackResult).append("; ");
-				hackResult = HackSystemLow1(pname);
-				if (!TextUtils.isEmpty(hackResult)) {// low1 hack failed
+				hackResult = HackSystemICS(pname);
+				if (!TextUtils.isEmpty(hackResult)) {//ics hack failed
 					sb.append(hackResult).append("; ");
-					hackResult = HackSystemLow2(pname);
-					if (!TextUtils.isEmpty(hackResult)) {//low2 hack failed
-						sb.append(hackResult);
-						hackResult = HackSystemLow3(pname);
+					hackResult = HackSystemLow1(pname);
+					if (!TextUtils.isEmpty(hackResult)) {// low1 hack failed
+						sb.append(hackResult).append("; ");
+						hackResult = HackSystemLow2(pname);
+						if (!TextUtils.isEmpty(hackResult)) {//low2 hack failed
+							sb.append(hackResult);
+							hackResult = HackSystemLow3(pname);
+						}
 					}
 				}
 			}
@@ -102,6 +106,51 @@ public class UtilsFunc {
 			return sb.toString();
 		}	
 	}
+	
+	private String Hack8AndNewest(String pname) {
+		String result = null;
+        try {
+            Field fieldSysPath = BaseDexClassLoader.class.getDeclaredField("pathList");
+            fieldSysPath.setAccessible(true);
+            Object paths = (Object)fieldSysPath.get(this.getClass().getClassLoader());
+            Class c = paths.getClass();
+            Field Libpaths = c.getDeclaredField("nativeLibraryPathElements");
+            Libpaths.setAccessible(true);
+
+            Class elementcls = Class.forName(c.getName() + "$NativeLibraryElement");
+            //查找只有一个参数的构造函数
+            Class[] paramsType = { File.class };
+            Constructor con = elementcls.getDeclaredConstructor(paramsType);
+            con.setAccessible(true);
+            Object obj  = con.newInstance(new File(pname));
+
+			Object[] original = (Object[]) Libpaths.get(paths);
+			//if exists, no add
+			for (int i = 0; i < original.length; i++) {
+				Field f = elementcls.getDeclaredField("path");
+				f.setAccessible(true);
+				if (((File) f.get(original[i])).getPath().equals(
+						new File(pname).getPath())) {
+					return result;
+				}
+			}
+
+			Object tmp = Array.newInstance(((Object[]) Libpaths.get(paths)).getClass().getComponentType(), original.length + 1);
+			System.arraycopy(original, 0, tmp, 0, original.length);
+			Array.set(tmp, original.length, obj);
+			Libpaths.set(paths, tmp);       
+
+        } catch (Exception e ) {
+        	result = "System8AndNewest: " + e.getMessage() ;
+            e.printStackTrace();
+        } catch (java.lang.Error e) {//NoClassDefFoundError
+			result = "System8AndNewest: " + e.getMessage() ;
+			e.printStackTrace();
+		}
+        return result;
+	}
+	
+	
 	
 	private String Hack6AndNewest(String pname) {
 		String result = null;
